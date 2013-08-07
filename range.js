@@ -61,7 +61,9 @@
             $el.wrap('<div/>');
             $container = $(el).parent();
             $container.addClass(options.container_class);
-            $container.append('<div class="'+ options.bar_class + '"><button onclick="return false;" class="'+ $el.attr('class') + ' ' + options.button_class + '" value="'+val+'"></div></div>');
+            var inputStyle = $el.attr('class') === 'undefined' ? $el.attr('class') : '';
+            $container.append('<div class="'+ options.bar_class + '"><button onclick="return false;" class="'+ inputStyle + ' ' + options.button_class + '" value="'+val+'"></div></div>');
+            //
             //
             $button = $container.find('.' + options.button_class);
             $bar = $container.find('.' + options.bar_class);
