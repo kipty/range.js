@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" > 
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>Range Slider</title>
+
+        <link rel="stylesheet" href="range.css">
+
+        <script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+        <script src="range.js"></script>
+    </head>
+    <body>
+
+        <div>
+            <input type="range" name="slider" min="0" max="10000" step="1000" value="0">
+        </div>
+        <p class="js-counter">0</p>
+
+        <script>
+
+            /*
+             * Range feature detection
+             * Could use Modernizr here
+             * @returns {Boolean}
+             */
+            function supportsRange() {
+                var i = document.createElement("input");
+                i.setAttribute("type", "range");
+                return false;//i.type !== "text";
+            }
+
+
+            $(document).ready(function() {
+                /*
+                 * initiate Range slider if it is not supported
+                 */
+                if (supportsRange()) {
+                    //HTML5 range slider
+                    var $slider = $('input[name="slider"]');
+                    $slider.on('change', function(e) {
+                        $('.js-counter').text($(this).val());
+                        e.preventDefault();
+                    });
+
+                } else {
+                    //create JS range slider
+                    $('input[name="slider"]').Range({width: '200px'});
+                    
+                    //slider dispatches 'change' event
+                    $('input[name="slider"]').on('change', function(e, slider) {
+                        $('.js-counter').text($(this).val());
+                    });
+                }
+            });
+
+        </script>
+
+    </body>
+</html>
