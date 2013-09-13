@@ -16,7 +16,7 @@ Simple, no frills.
 	function supportsRange() {
 	    var i = document.createElement("input");
 	    i.setAttribute("type", "range");
-	    return false;//i.type !== "text";
+	    return i.type !== "text";
 	}
 	
 	if (!supportsRange()) {
