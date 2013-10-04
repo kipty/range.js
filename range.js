@@ -1,26 +1,27 @@
 /*
-The MIT License (MIT)
-
-Copyright (c) 2013 Paul Robinson (https://github.com/kipty/range.js)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-;(function($) {
+ The MIT License (MIT)
+ 
+ Copyright (c) 2013 Paul Robinson (https://github.com/kipty/range.js)
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+;
+(function($) {
     'use strict';
 
     /*
@@ -35,19 +36,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 $el = $(el),
                 $button, $bar, $container,
                 options = opts,
-                mouseIsDown = false,
+                dragging = false,
                 val = 0,
-                startX = 0,
-                diffX,
+                startPos = 0,
+                diff,
                 sliderLength, stepDist, valDiff,
-                maxVal, minVal, step = 1;
+                maxVal, minVal, step = 1,
+                H = true, V = false, dir = H;
+
 
         /*
          * 
          * @returns {undefined}
          */
         self.init = function() {
-
             //get values from input
             minVal = parseInt($el.attr('min'));
             maxVal = parseInt($el.attr('max'));
@@ -61,7 +63,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             //do checks on values
             if (step > Math.abs(valDiff))
                 throw new Error("Range: step value too big");
-            
+
             //min less than max
             if (minVal < maxVal)
             {
@@ -83,44 +85,61 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             $el.wrap('<div/>');
             $container = $(el).parent();
             $container.addClass(options.container_class);
-            var inputStyle = $el.attr('class') === 'undefined' ? $el.attr('class') : '';
-            $container.append('<div class="'+ options.bar_class + '"><button onclick="return false;" class="'+ inputStyle + ' ' + options.button_class + '" value="'+val+'"></div></div>');
-            //
+
+            if (typeof(options.vertical) !== undefined) {
+                if (options.vertical === true) {
+                    dir = V;
+                    $container.addClass(options.vertical_class);
+                }
+            }
+
+            //get original css styles from input
+            var inputStyle = $el.attr('class') === undefined ? '' : $el.attr('class') + ' ';
+            $container.append('<button onclick="return false;" class="' + inputStyle + options.button_class + '" value="' + val + '"/><div class="' + options.bar_class + '"></div>');
             //
             $button = $container.find('.' + options.button_class);
             $bar = $container.find('.' + options.bar_class);
 
-            //set width from options
-            if (typeof(options.width) !== 'undefined') {
-                $container.css('width', options.width);
-            }
             //init the dimension values
             self.setSliderDimensions();
-
+            //
+            $button.css('position', 'relative');//make sure it has relative position
             //
             //add events
-            $button.on('mousedown', self.slideStart);
-            $bar.on('mousedown', self.slideStart);
+            $button.on('mousedown touchstart', self.slideStart);
+            $bar.on('mousedown touchstart', self.slideStart);
             $button.on('keydown', self.slideStart);
             $(window).on('resize', self.setSliderDimensions);
 
             /*
              * mouse movement
              */
-            $(document).on('mousemove', function(e) {
-                self.onMouseMove(e);
+            $container.on('mousemove touchmove', function(e) {
+                if (e.type === 'mousemove')
+                    self.onMouseMove(e);
+                else if (e.type === 'touchmove')
+                    self.onTouchMove(e);
                 e.preventDefault();
                 return false;
             });
+
             /*
              * mouse up
              */
-            $(document).on('mouseup', function(e) {
+            $container.on('mouseup touchend', function(e) {
                 self.onMouseUp(e);
                 e.preventDefault();
                 return false;
             });
 
+            /*
+             * mouse leaves page
+             */
+            $(document).on('mouseleave', function(e) {
+                self.onMouseUp(e);
+                e.preventDefault();
+                return false;
+            });
         };
 
         /*
@@ -131,39 +150,61 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          */
         self.slideStart = function(e) {
 
-            var x, invalidate = false;
+            var pos, invalidate = false;
             if (e.type === 'mousedown') {
                 //mouse
-                mouseIsDown = true;
-                x = startX = self.getMouseX(e);
-               
-                //bar click
-                if ($(e.target)[0] === $bar[0]) {
-                    //get cutrrent button position
-                    startX = self.getValueAsPosition();
-                    mouseIsDown = false;
+                dragging = true;
+                if (dir === H) {
+                    pos = startPos = self.getMouseX(e);
+                } else {
+                    pos = startPos = self.getMouseY(e);
                 }
-
                 invalidate = true;
 
             } else if (e.type === 'keydown') {
                 //keyboard
-                startX = 0;
+                startPos = 0;
                 if (e.which === 37 || e.which === 40) {
                     //down/left
-                    x = -stepDist;
+                    pos = -stepDist;
                     invalidate = true;
                 }
                 if (e.which === 38 || e.which === 39) {
                     //up/right
-                    x = stepDist;
+                    pos = stepDist;
                     invalidate = true;
                 }
+            } else if (e.type === 'touchstart') {
+                //mouse
+                dragging = true;
+
+                if (!e.touches) {
+                    e = e.originalEvent;
+                }
+                if (dir === H) {
+                    pos = startPos = e.touches[0].pageX;
+                } else {
+                    pos = startPos = e.touches[0].pageY;
+                }
+                invalidate = true;
             }
+
             //
             if (invalidate) {
-                diffX = ($button.offset().left - $bar.offset().left);
-                self.invalidate(x);
+
+                //bar click
+                if ($(e.target)[0] === $bar[0]) {
+                    //get cutrrent button position
+                    startPos = self.getValueAsPosition() - $(window).scrollTop();
+                    dragging = false;
+                }
+                //
+                if (dir === H)
+                    diff = ($button.offset().left - $bar.offset().left);
+                else
+                    diff = ($button.offset().top - $bar.offset().top);
+
+                self.invalidate(pos);
             }
             e.preventDefault();
             return false;
@@ -182,8 +223,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             return x;
         };
 
+        /*
+         * gets x pos of the mouse
+         * @param {type} e
+         * @returns mouse X position
+         */
+        self.getMouseY = function(e) {
+            var y = 0;
+            if (e.clientY) {
+                y = e.clientY - $bar.offset().top;
+            }
+            return y;
+        };
+
         /**
-         * get the current value as an x position on the slider
+         * get the current slider value as a position
          * @returns
          */
         self.getValueAsPosition = function() {
@@ -205,36 +259,45 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          * called on resize
          */
         self.setSliderDimensions = function() {
-            sliderLength = $bar.width() - $button.width();
+            if (dir === H)
+                sliderLength = $bar.width() - $button.width();
+            else
+                sliderLength = $bar.height() - $button.height();
+
             stepDist = Math.round(sliderLength / (valDiff / step));
-            if(stepDist === 0) stepDist = 1;
+            if (stepDist === 0)
+                stepDist = 1;
             //set button pos
-            var left = self.getValueAsPosition();
-            $button.css("left", left);
+            var pos = self.getValueAsPosition();
+            if (dir === H)
+                $button.css("left", pos);
+            else
+                $button.css("top", pos);
         };
 
         /*
          * set the new button position
-         * @param {type} x
+         * @param {type} pos
          */
-        self.invalidate = function(x) {
-
-            var movedX = x - startX;
-            var newLeft = diffX + movedX;
+        self.invalidate = function(pos) {
+            var moved = pos - startPos;
+            var newPos = diff + moved;
 
             //set max/min x
-            newLeft = newLeft < 0 ? 0 : newLeft;
-            newLeft = Math.min(newLeft, sliderLength);
+            newPos = newPos < 0 ? 0 : newPos;
+            newPos = Math.min(newPos, sliderLength);
 
             //round to the nearest step value
-            newLeft = (stepDist * Math.round(newLeft / stepDist));
+            newPos = (stepDist * Math.round(newPos / stepDist));
 
             //set new position
-            $button.css("left", newLeft);
+            if (dir === H)
+                $button.css("left", newPos);
+            else
+                $button.css("top", newPos);
 
             //set value
-            val = self.getNearestValue(newLeft);
-            //console.log(val);
+            val = self.getNearestValue(newPos);
             $el.val(val);
             $button.val(val);
             //event
@@ -247,20 +310,42 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          * @returns {Boolean}
          */
         self.onMouseMove = function(e) {
-            if (mouseIsDown) {
-                self.invalidate(self.getMouseX(e));
+            if (dragging) {
+                if (dir === H)
+                    self.invalidate(self.getMouseX(e));
+                else
+                    self.invalidate(self.getMouseY(e));
                 return false;
             }
         };
+
+        /*
+         * onTouchMove Event handler
+         * @param {type} e
+         * @returns {Boolean}
+         */
+        self.onTouchMove = function(e) {
+            if (!dragging)
+                return false;
+            //
+            if (!e.touches) {
+                e = e.originalEvent;
+            }
+            if (dir === H)
+                self.invalidate(e.touches[0].pageX);
+            else
+                self.invalidate(e.touches[0].pageY);
+            return false;
+        };
+
+
 
         /*
          * mouseup Event handler
          * @param {type} e
          */
         self.onMouseUp = function(e) {
-            mouseIsDown = false;
-            //on changed event
-            //$el.trigger('range:onChanged', [{val: val}]);
+            dragging = false;
             return false;
         };
 
@@ -282,9 +367,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      * default options
      */
     $.fn.Range.defaults = {
-        width: '100%',
         container_class: 'range',
         button_class: 'range-button',
-        bar_class: 'range-bar'
+        bar_class: 'range-track',
+        vertical: false,
+        vertical_class: 'vertical'
     };
 })($);
