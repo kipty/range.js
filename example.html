@@ -11,13 +11,25 @@
         <script src="range.js"></script>
     </head>
     <body>
-
-        <div>
-            <input type="range" name="slider" min="0" max="10000" step="1000" value="0">
+        <p class="log"></p>
+        <!-- horizontal -->
+        <div class="container">
+            <input id="slider" type="range" name="slider" min="0" max="10000" step="1000" value="1">
+            <p class="js-counter">0</p>
         </div>
-        <p class="js-counter">0</p>
-
+        <!-- vertical -->
+        <div class="container">
+            <input id="sliderV" type="range" name="slider" min="0" max="10000" step="1000" value="1">
+            <p class="js-counter-v">0</p>
+        </div>
         <script>
+
+            /*
+             * detect for useragent - using "html[data-useragent*='MSIE 10.0'][data-useragent*='MSIE 10.0']" for specific IE10 css
+             * @see http://css-tricks.com/ie-10-specific-styles/
+             */
+            var doc = document.documentElement;
+            doc.setAttribute('data-useragent', navigator.userAgent);
 
             /*
              * Range feature detection
@@ -27,34 +39,48 @@
             function supportsRange() {
                 var i = document.createElement("input");
                 i.setAttribute("type", "range");
-                return false;//i.type !== "text";
+                return i.type !== "text";
             }
 
 
             $(document).ready(function() {
+                //----------- HORIZONTAL SLIDER --------------
+                var $sliderH = $('input[id="slider"]');
+                /*
+                 * slider dispatches 'change' event
+                 */
+                $sliderH.on('change', function(e, slider) {
+                    $('.js-counter').text($(this).val());
+                });
                 /*
                  * initiate Range slider if it is not supported
                  */
                 if (supportsRange()) {
                     //HTML5 range slider
-                    var $slider = $('input[name="slider"]');
-                    $slider.on('change', function(e) {
+                    //use 'input' event for support in FF mouae and keyboard - 'change' only fires on mouse up
+                    document.getElementById("slider").addEventListener("input", function(e) {
                         $('.js-counter').text($(this).val());
-                        e.preventDefault();
-                    });
+                    }, false);
 
                 } else {
                     //create JS range slider
-                    $('input[name="slider"]').Range({width: '200px'});
-                    
-                    //slider dispatches 'change' event
-                    $('input[name="slider"]').on('change', function(e, slider) {
-                        $('.js-counter').text($(this).val());
-                    });
+                    $sliderH.Range();
                 }
+
+                //------------- VERTICAL SLIDER ------------
+                
+                /*
+                 * vertical slider needs to be the JS version
+                 * TODO - native version for browsers that support vertical range (-webkit-appearance: slider-vertical;)
+                 */
+                var $sliderV = $('input[id="sliderV"]');
+                $('input[id="sliderV"]').Range({vertical: true});
+                $sliderV.on('change', function(e, slider) {
+                    $('.js-counter-v').text($(this).val());
+                });
+
             });
 
         </script>
-
     </body>
 </html>
