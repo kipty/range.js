@@ -1,88 +1,111 @@
+body{
+    background-color: #999;
+}
+.container{
+    margin: 100px;
+    width: 300px;
+}
+p{
+    text-align: center;
+    font-size: 2em;
+}
+
 /*
-* example css for the range slider
-* inspired by http://jonathanstark.com/labs/how-to-style-an-html5-range-input-with-css.html
+*  ---------------------- horizontal range slider -----------------
 */
-.range{
-    position: relative;
-}
-.range .range-bar .range-button {
-    position: relative;
-    top:-18px;
-    border-radius: 10px;
-    background-color: #AAA;
-    border: 1px solid #999;
-    height: 44px;
-    width: 44px;
-}
-.range .range-bar{
-    background-color: #999;
-    border-radius: 5px;
-    box-shadow: inset 0 0 5px #333;
-    display: block;
-    height: 10px;
-    left: 10px;
-    margin: 20px;
-    position: absolute;
-    right: 10px;
-}
+
+/* HTML5 range css */
 input[type='range'] {
     -webkit-appearance: none !important;
-    border-radius: 5px;
-    box-shadow: inset 0 0 5px #333;
-    background-color: #999;
     display: block;
+    position: relative;
+    width: 100%;
     height: 10px;
-    left: 10px;
-    margin: 20px;
-    position: absolute;
-    right: 10px;
+    background-color: #e3e3e3;
 }
 input[type='range']::-webkit-slider-thumb{
+    background: #F29400;
+    border: none;
+    height: 50px;
+    width: 50px;
     -webkit-appearance: none !important;
-    border-radius: 10px;
-    background-color: #AAA;
-    border: 1px solid #999;
-    height: 44px;
-    width: 44px;
+    -webkit-border-radius: 25px;
+    border-radius: 25px;
+    -webkit-box-shadow: rgba(0,0,0,0.2) 5px 5px 0 0;
+    box-shadow: rgba(0,0,0,0.2) 5px 5px 0 0; 
+}
+input[type='range']::-moz-range-thumb{
+    background: #F29400;
+    border: none;
+    height: 50px;
+    width: 50px;
+    -moz-border-radius: 25px 25px 25px 25px;
+    border-radius: 25px 25px 25px 25px;
+    -moz-box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.2);
+}
+input[type='range']::-moz-range-track {
+    background: none;
+    height: 0;
+    border: none;
+}
+input[type='range']::-ms-fill-lower, input[type='range']::-ms-ticks-before, input[type='range']::-ms-ticks-after{
+    display:none;
+}
+html[data-useragent*='MSIE 10.0'][data-useragent*='MSIE 10.0'] input[type='range']{
+    background: none;
+    height: 110px;/*needs height*/
+}
+input[type='range']::-ms-track {
+    background: #e3e3e3;
+    background-color: #e3e3e3;
+    /*color: #fff;*/
+    height: 10px;
+    border: none;
+}
+input[type='range']::-ms-thumb{
+    background: #F29400;
+    background-color: #F29400;
+    border: none;
+    -ms-border-radius: 25px 25px 25px 25px;
+    border-radius: 25px 25px 25px 25px;
+    -ms-box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.2);
+    height: 50px;
+    width: 50px;
+}
+
+/* JS version css */
+.range .range-button {
+    top:-20px;/*offset for button*/
+    background-color: #F29400;
+    border: none;
+    height: 50px;
+    width: 50px;
+    -webkit-border-radius: 25px;
+    -moz-border-radius: 25px;
+    border-radius: 25px;
+    -webkit-box-shadow: rgba(0,0,0,0.2) 5px 5px 0 0;
+    -moz-box-shadow: rgba(0,0,0,0.2) 5px 5px 0 0;
+    box-shadow: rgba(0,0,0,0.2) 5px 5px 0 0; 
+}
+.range .range-track{
+    display: block;
+    background-color: #e3e3e3;
+    width: 100%;
+    height: 10px;
+    margin-top: -50px;/*height of button*/
 }
 
 
-.range .range-bar .range-button {
-    top:-18px;
-    border-radius: 10px;
-    background-color: #AAA;
-    border: 1px solid #999;
-    height: 44px;
-    width: 44px;
+/* ----------------- vertical slider ------------------*/
+
+/* JS version css */
+.vertical.range .range-track{
+    background-color: #e3e3e3;
+    width: 10px;
+    height: 300px;
+    margin-left: 20px;/*offset for button*/
 }
-.range .range-bar{
-    background-color: #999;
-    border-radius: 5px;
-    box-shadow: inset 0 0 5px #333;
-    display: block;
-    height: 10px;
-    left: 10px;
-    margin: 20px;
-    position: absolute;
-    right: 10px;
-}
-input[type='range'] {
-    -webkit-appearance: none !important;
-    border-radius: 5px;
-    box-shadow: inset 0 0 5px #333;
-    background-color: #999;
-    display: block;
-    height: 10px;
-    left: 10px;
-    margin: 20px;
-    position: absolute;
-    right: 10px;
-}
-input[type='range']::-webkit-slider-thumb{
-    -webkit-appearance: none !important;
-    border-radius: 10px;
-    background-color: #AAA;
-    border: 1px solid #999;
-    height: 44px;
-    width: 44px;
-}
+
+
