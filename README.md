@@ -5,7 +5,7 @@ range.js
 
 Mimics the HTML5 Range slider functionality.
 Works with keyboard arrow keys.
-Simple, no frills. See example here http://jsfiddle.net/pthrobinson/39RpL/1/
+Simple, no frills. See example here http://jsfiddle.net/pthrobinson/39RpL
 
 ```javascript
 	/*
