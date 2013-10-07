@@ -23,7 +23,6 @@
 ;
 (function($) {
     'use strict';
-
     /*
      * 
      * @param {type} el
@@ -43,8 +42,6 @@
                 sliderLength, stepDist, valDiff,
                 maxVal, minVal, step = 1,
                 H = true, V = false, dir = H;
-
-
         /*
          * 
          * @returns {undefined}
@@ -63,7 +60,6 @@
             //do checks on values
             if (step > Math.abs(valDiff))
                 throw new Error("Range: step value too big");
-
             //min less than max
             if (minVal < maxVal)
             {
@@ -85,7 +81,6 @@
             $el.wrap('<div/>');
             $container = $(el).parent();
             $container.addClass(options.container_class);
-
             if (typeof(options.vertical) !== undefined) {
                 if (options.vertical === true) {
                     dir = V;
@@ -102,15 +97,22 @@
 
             //init the dimension values
             self.setSliderDimensions();
-            //
-            $button.css('position', 'relative');//make sure it has relative position
+            $button.css('position', 'relative'); //make sure it has relative position
+            //remove margin and set margin top of bar
+            $button.css('margin', 0);
+            $bar.css('margin-top', -$button.height());
+            //centralise track behind button
+            if (dir === H) {
+                $bar.css('margin-top', -($button.height() + $bar.height()) / 2);
+            } else {
+                $bar.css('margin-left', ($button.height() - $bar.width()) / 2);
+            }
             //
             //add events
             $button.on('mousedown touchstart', self.slideStart);
             $bar.on('mousedown touchstart', self.slideStart);
             $button.on('keydown', self.slideStart);
             $(window).on('resize', self.setSliderDimensions);
-
             /*
              * mouse movement
              */
@@ -122,7 +124,6 @@
                 e.preventDefault();
                 return false;
             });
-
             /*
              * mouse up
              */
@@ -131,17 +132,15 @@
                 e.preventDefault();
                 return false;
             });
-
             /*
              * mouse leaves page
              */
-            $(document).on('mouseleave', function(e) {
+            $(document).on('mouseleave mouseup', function(e) {
                 self.onMouseUp(e);
                 e.preventDefault();
                 return false;
             });
         };
-
         /*
          * called on mousedown and keydown events
          * sets start X position and updates the display
@@ -160,7 +159,6 @@
                     pos = startPos = self.getMouseY(e);
                 }
                 invalidate = true;
-
             } else if (e.type === 'keydown') {
                 //keyboard
                 startPos = 0;
@@ -177,7 +175,6 @@
             } else if (e.type === 'touchstart') {
                 //mouse
                 dragging = true;
-
                 if (!e.touches) {
                     e = e.originalEvent;
                 }
@@ -203,13 +200,11 @@
                     diff = ($button.offset().left - $bar.offset().left);
                 else
                     diff = ($button.offset().top - $bar.offset().top);
-
                 self.invalidate(pos);
             }
             e.preventDefault();
             return false;
         };
-
         /*
          * gets x pos of the mouse
          * @param {type} e
@@ -222,7 +217,6 @@
             }
             return x;
         };
-
         /*
          * gets x pos of the mouse
          * @param {type} e
@@ -235,7 +229,6 @@
             }
             return y;
         };
-
         /**
          * get the current slider value as a position
          * @returns
@@ -243,7 +236,6 @@
         self.getValueAsPosition = function() {
             return Math.round(((val - minVal) / valDiff) * sliderLength);
         };
-
         /*
          * get the nearst value to the supplied position
          * @param {type} pos
@@ -253,7 +245,6 @@
             var v = (pos / sliderLength) * valDiff;
             return (Math.round(v / step) * step) + minVal;
         };
-
         /*
          * configure the dimension varialbes
          * called on resize
@@ -263,7 +254,6 @@
                 sliderLength = $bar.width() - $button.width();
             else
                 sliderLength = $bar.height() - $button.height();
-
             stepDist = Math.round(sliderLength / (valDiff / step));
             if (stepDist === 0)
                 stepDist = 1;
@@ -272,9 +262,8 @@
             if (dir === H)
                 $button.css("left", pos);
             else
-                $button.css("top", pos);
+                $button.css("top", sliderLength - pos);
         };
-
         /*
          * set the new button position
          * @param {type} pos
@@ -282,20 +271,20 @@
         self.invalidate = function(pos) {
             var moved = pos - startPos;
             var newPos = diff + moved;
-
             //set max/min x
             newPos = newPos < 0 ? 0 : newPos;
             newPos = Math.min(newPos, sliderLength);
-
             //round to the nearest step value
             newPos = (stepDist * Math.round(newPos / stepDist));
-
             //set new position
-            if (dir === H)
+            if (dir === H) {
                 $button.css("left", newPos);
-            else
+            }
+            else {
                 $button.css("top", newPos);
-
+                //set value so that 0 is at the bottom of the slider
+                newPos = sliderLength - newPos;
+            }
             //set value
             val = self.getNearestValue(newPos);
             $el.val(val);
@@ -303,7 +292,6 @@
             //event
             $el.trigger('change', [{val: val}]);
         };
-
         /*
          * mouseMove Event handler
          * @param {type} e
@@ -318,7 +306,6 @@
                 return false;
             }
         };
-
         /*
          * onTouchMove Event handler
          * @param {type} e
@@ -337,9 +324,6 @@
                 self.invalidate(e.touches[0].pageY);
             return false;
         };
-
-
-
         /*
          * mouseup Event handler
          * @param {type} e
@@ -348,11 +332,8 @@
             dragging = false;
             return false;
         };
-
         self.init();
-
     };
-
     /*
      * @param {type} options
      * @returns 
