@@ -137,8 +137,6 @@
              */
             $(document).on('mouseleave mouseup', function(e) {
                 self.onMouseUp(e);
-                e.preventDefault();
-                return false;
             });
         };
         /*
