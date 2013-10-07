@@ -74,7 +74,7 @@
                  * TODO - native version for browsers that support vertical range (-webkit-appearance: slider-vertical;)
                  */
                 var $sliderV = $('input[id="sliderV"]');
-                $('input[id="sliderV"]').Range({vertical: true});
+                $sliderV.Range({vertical: true});
                 $sliderV.on('change', function(e, slider) {
                     $('.js-counter-v').text($(this).val());
                 });
